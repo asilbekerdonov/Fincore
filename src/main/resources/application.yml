@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: Fincore
+  profiles:
+    active: dev
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
