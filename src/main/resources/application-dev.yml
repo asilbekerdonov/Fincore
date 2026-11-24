@@ -17,3 +17,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+bank:
+  transfer:
+    max-amount: 100000.00
+    enabled: true

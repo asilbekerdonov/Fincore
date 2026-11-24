@@ -1,6 +1,4 @@
-package com.example.spring.core;
-
-import java.math.BigDecimal;
+package com.example.spring.core.transfer;
 
 import java.math.BigDecimal;
 

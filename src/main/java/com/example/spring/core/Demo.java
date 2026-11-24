@@ -1,11 +1,19 @@
 package com.example.spring.core;
 
+import com.example.spring.core.Audit.AuditLogRepository;
+import com.example.spring.core.account.Account;
+import com.example.spring.core.account.AccountRepository;
+import com.example.spring.core.transfer.TransferRequest;
+import com.example.spring.core.transfer.TransferService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+@SpringBootApplication
+@ConfigurationPropertiesScan
 @Component
 public class Demo implements CommandLineRunner {
     private final AccountRepository accounts;
