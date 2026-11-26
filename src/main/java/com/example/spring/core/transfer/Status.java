@@ -1,4 +1,4 @@
-package com.example.spring.core.enums;
+package com.example.spring.core.transfer;
 
 public enum Status {
 

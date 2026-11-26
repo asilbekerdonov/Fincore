@@ -1,15 +1,16 @@
 package com.example.spring.core.account;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 @Entity
+
+@Table(name = "accounts")
+
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, precision = 19, scale = 2)
     private Long id;
     private String owner;
     private BigDecimal balance;

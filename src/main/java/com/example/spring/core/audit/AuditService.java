@@ -1,4 +1,4 @@
-package com.example.spring.core.Audit;
+package com.example.spring.core.audit;
 
 
 import org.springframework.stereotype.Service;

@@ -1,11 +1,14 @@
-package com.example.spring.core.web.requests;
+package com.example.spring.core.web.dto;
+
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record TransferRequest(@NotNull Long fromAccountId,
+public record TransferRequest(
+                                Long id,
+                                @NotNull Long fromAccountId,
                               @NotNull Long toAccountId,
                               @Positive @NotNull BigDecimal amount) {
 }

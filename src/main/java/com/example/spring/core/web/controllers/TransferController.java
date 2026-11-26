@@ -1,9 +1,10 @@
 package com.example.spring.core.web.controllers;
 
+import com.example.spring.core.transfer.Transfer;
 import com.example.spring.core.transfer.TransferService;
 import com.example.spring.core.web.mappers.TransferMapper;
-import com.example.spring.core.web.requests.TransferRequest;
-import com.example.spring.core.web.requests.TransferResponse;
+import com.example.spring.core.web.dto.TransferRequest;
+import com.example.spring.core.web.dto.TransferResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,12 @@ public class TransferController {
     }
     @PostMapping
     public ResponseEntity<TransferResponse> createTransfer(@Valid @RequestBody TransferRequest request) {
-        transferService.transfer(
+        Transfer transfer =  transferService.transfer(
                 request.fromAccountId(),
                 request.toAccountId(),
                 request.amount()
         );
-        TransferResponse response = TransferMapper.toResponse(request);
+        TransferResponse response = TransferMapper.toResponse(transfer);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

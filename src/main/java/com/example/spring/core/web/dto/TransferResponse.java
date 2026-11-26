@@ -1,6 +1,6 @@
-package com.example.spring.core.web.requests;
+package com.example.spring.core.web.dto;
 
-import com.example.spring.core.enums.Status;
+import com.example.spring.core.transfer.Status;
 
 import java.math.BigDecimal;
 

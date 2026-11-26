@@ -1,4 +1,4 @@
-package com.example.spring.core;
+package com.example.spring.core.config;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

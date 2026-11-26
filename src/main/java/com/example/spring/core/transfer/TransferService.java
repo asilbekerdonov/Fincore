@@ -1,8 +1,9 @@
 package com.example.spring.core.transfer;
 
-import com.example.spring.core.Audit.AuditService;
+import com.example.spring.core.audit.AuditService;
 import com.example.spring.core.account.Account;
 import com.example.spring.core.account.AccountRepository;
+import com.example.spring.core.transfer.TransferRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -15,57 +16,37 @@ public class TransferService {
 
     private final AccountRepository accounts;
     private final AuditService audit;
-    public TransferService(AccountRepository accounts, AuditService audit) {
+    private final TransferRepository transfers;
+    public TransferService(AccountRepository accounts, AuditService audit, TransferRepository transfers) {
         this.accounts = accounts;
         this.audit = audit;
+        this.transfers = transfers;
 
     }
     @Transactional
-    public void transfer(long fromId, long toId, BigDecimal amount) {
+    public Transfer transfer(long fromId, long toId, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalStateException("Не хватает средств");
+            throw new IllegalStateException("Amount must be greater than zero   ");
         }
         if (fromId == toId) {
-            throw new IllegalStateException("Тот же аккоунт!");
+            throw new IllegalStateException("Cannot transfer to the same account");
 
         }
-        audit.log("transfer started: " + fromId + " --> "  + toId);
+
+        audit.log("transfer started: " + fromId + " --> " + toId + ", amount=" + amount);
         Account from = accounts.findById(fromId).orElseThrow(() -> new IllegalArgumentException("Account not found: " + fromId));
         Account to = accounts.findById(toId).orElseThrow(() -> new IllegalArgumentException("Account not found: " + toId));
         from.withdraw(amount);
         to.deposit(amount);
 
-    }
-
-    @Transactional
-    public void transferAll(long toId, BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
-        }
-
-        Account toAccount = accounts.findById(toId)
-                .orElseThrow(() -> new IllegalArgumentException("Target account not found: " + toId));
-
-        List<Account> allAccounts = accounts.findAll();
-        List<Account> senders = allAccounts.stream()
-                .filter(acc -> !acc.getId().equals(toId))
-                .toList();
-        if (senders.isEmpty()) {
-            throw new IllegalStateException("No other accounts available for transfer");
-        }
-        for (Account sender : senders) {
-            sender.withdraw(amount);
-            toAccount.deposit(amount);
-        }
+        Transfer saved = transfers.save(
+                new Transfer(fromId, toId, amount, Status.SUCCESSFUL)
+        );
+        audit.log("transfer completed: id=" + saved.getId());
+        return saved;
 
     }
 
-    @Transactional
-    public void transfersAll(List<TransferRequest> transferRequests) {
-        for (TransferRequest request : transferRequests) {
-            transfer(request.fromId(), request.toId(), request.amount());
-        }
-    }
 
 
 }

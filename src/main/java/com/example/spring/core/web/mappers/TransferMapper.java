@@ -1,19 +1,19 @@
 package com.example.spring.core.web.mappers;
 
-import com.example.spring.core.enums.Status;
-import com.example.spring.core.web.requests.TransferRequest;
-import com.example.spring.core.web.requests.TransferResponse;
+
+import com.example.spring.core.transfer.Transfer;
+import com.example.spring.core.web.dto.TransferResponse;
 
 public final class TransferMapper {
 
     private TransferMapper() {}
 
-    public static TransferResponse toResponse(TransferRequest request) {
+    public static TransferResponse toResponse(Transfer transfer) {
         return new TransferResponse(
-                Status.SUCCESSFUL,
-                request.fromAccountId(),
-                request.toAccountId(),
-                request.amount()
+                transfer.getStatus(),
+                transfer.getFromAccountId(),
+                transfer.getToAccountId(),
+                transfer.getAmount()
 
         );
     }
