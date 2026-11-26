@@ -5,6 +5,7 @@ import com.example.spring.core.account.AccountRepository;
 import com.example.spring.core.audit.AuditService;
 
 
+import com.example.spring.core.config.TransferProperties;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 
 @Service
 public class TransferService {
-
+    private final TransferProperties properties;
     private final AccountRepository accounts;
     private final TransferRepository transfers;
     private final AuditService audit;
@@ -21,8 +22,11 @@ public class TransferService {
     public TransferService(
             AccountRepository accounts,
             TransferRepository transfers,
-            AuditService audit
+            AuditService audit,
+            TransferProperties properties
+
     ) {
+        this.properties = properties;
         this.accounts = accounts;
         this.transfers = transfers;
         this.audit = audit;
@@ -30,6 +34,12 @@ public class TransferService {
 
     @Transactional
     public Transfer transfer(long fromId, long toId, BigDecimal amount) {
+        if (!properties.enabled()) {
+            throw new IllegalStateException("Transfers are currently disabled");
+        }
+        if (properties.maxAmount() != null && amount.compareTo(properties.maxAmount()) > 0) {
+            throw  new IllegalStateException("Transfer amount exceeds max limit: " + properties.maxAmount());
+        }
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }

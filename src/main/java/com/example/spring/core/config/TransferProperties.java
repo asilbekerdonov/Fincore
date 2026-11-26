@@ -6,9 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+
 @Validated
 @ConfigurationProperties(prefix = "bank.transfer")
-
 public record TransferProperties(
         @NotNull @Positive BigDecimal maxAmount,
         boolean enabled
