@@ -3,12 +3,10 @@ package com.example.spring.core.transfer;
 import com.example.spring.core.audit.AuditService;
 import com.example.spring.core.account.Account;
 import com.example.spring.core.account.AccountRepository;
-import com.example.spring.core.transfer.TransferRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class TransferService {
