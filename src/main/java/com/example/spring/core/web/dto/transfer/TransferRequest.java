@@ -1,4 +1,4 @@
-package com.example.spring.core.web.dto;
+package com.example.spring.core.web.dto.transfer;
 
 
 import jakarta.validation.constraints.NotNull;

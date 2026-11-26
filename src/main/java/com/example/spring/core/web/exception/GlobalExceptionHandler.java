@@ -1,5 +1,6 @@
 package com.example.spring.core.web.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,6 +27,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "Ваш запрос не может быть принят: " + message));
     }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(EntityNotFoundException ex) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Запрашиваемый ресурс не найден";
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", message));
+    }
+
 
 
 }

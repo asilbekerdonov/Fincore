@@ -3,7 +3,9 @@ package com.example.spring.core.transfer;
 import com.example.spring.core.account.Account;
 import com.example.spring.core.account.AccountRepository;
 import com.example.spring.core.audit.AuditService;
-import com.example.spring.core.transfer.Status;
+
+
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,5 +59,12 @@ public class TransferService {
 
         audit.log("transfer completed: id=" + saved.getId());
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public Transfer getById(Long id) {
+
+
+        return transfers.findById(id).orElseThrow(EntityNotFoundException::new) ;
     }
 }
