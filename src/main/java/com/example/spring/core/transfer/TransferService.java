@@ -6,11 +6,13 @@ import com.example.spring.core.audit.AuditService;
 
 
 import com.example.spring.core.config.TransferProperties;
+import com.example.spring.core.web.exception.BusinessRuleConflictException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Service
 public class TransferService {
@@ -35,18 +37,17 @@ public class TransferService {
     @Transactional
     public Transfer transfer(long fromId, long toId, BigDecimal amount) {
         if (!properties.enabled()) {
-            throw new IllegalStateException("Transfers are currently disabled");
-        }
-        if (properties.maxAmount() != null && amount.compareTo(properties.maxAmount()) > 0) {
-            throw  new IllegalStateException("Transfer amount exceeds max limit: " + properties.maxAmount());
+            throw BusinessRuleConflictException.transfersDisabled();
         }
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
-        if (fromId == toId) {
-            throw new IllegalStateException("Cannot transfer to the same account");
+        if (properties.maxAmount() != null && amount.compareTo(properties.maxAmount()) > 0) {
+            throw BusinessRuleConflictException.maxAmountExceeded(properties.maxAmount(), amount);
         }
-
+        if (fromId == toId) {
+            throw BusinessRuleConflictException.sameAccount(fromId);
+        }
         audit.log("transfer started: " + fromId + " --> " + toId + ", amount=" + amount);
 
         long firstId = Math.min(fromId, toId);
@@ -60,7 +61,16 @@ public class TransferService {
         Account from = (fromId == firstId) ? firstAccount : secondAccount;
         Account to = (toId == firstId) ? firstAccount : secondAccount;
 
-        from.withdraw(amount);
+        try {
+            from.withdraw(amount);
+        } catch (IllegalStateException ex) {
+            throw BusinessRuleConflictException.insufficientFunds(
+                    from.getId(), // подставь геттер ID счёта, если отличается
+                    from.getBalance(), // подставь геттер баланса, если отличается
+                    amount
+            );
+        }
+
         to.deposit(amount);
 
         Transfer saved = transfers.save(
