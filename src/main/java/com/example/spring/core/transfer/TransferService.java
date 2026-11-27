@@ -8,9 +8,13 @@ import com.example.spring.core.audit.AuditService;
 import com.example.spring.core.config.TransferProperties;
 import com.example.spring.core.web.exception.BusinessRuleConflictException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -83,8 +87,24 @@ public class TransferService {
 
     @Transactional(readOnly = true)
     public Transfer getById(Long id) {
-
-
         return transfers.findById(id).orElseThrow(EntityNotFoundException::new) ;
     }
+
+
+    @Transactional(readOnly = true)
+    public Page<Transfer> getHistory(Long accountId,  Status status, BigDecimal minAmount, Pageable pageable  ) {
+        if (accountId != null && !accounts.existsById(accountId)) {
+            throw new EntityNotFoundException("Счёт с ID " + accountId + " не найден");
+        }
+        if (minAmount.compareTo(BigDecimal.ZERO) >= 0) {
+            throw new IllegalArgumentException("Amount cannot equals to 0 or less ");
+        }
+
+        Specification<Transfer> spec = Specification
+                .where(TransferRepository.byAccountId(accountId))
+                .and(TransferRepository.amountGreaterThanOrEqual(minAmount))
+                .and(TransferRepository.hasStatus(status));
+        return transfers.findAll(spec, pageable);
+    }
+
 }

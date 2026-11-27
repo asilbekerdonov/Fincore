@@ -1,5 +1,6 @@
 package com.example.spring.core.web.controllers;
 
+import com.example.spring.core.transfer.Status;
 import com.example.spring.core.transfer.Transfer;
 import com.example.spring.core.transfer.TransferService;
 import com.example.spring.core.web.mappers.TransferMapper;
@@ -11,10 +12,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+
 
 //@Operation(summary = "Create transfer")
 @ApiResponses({
@@ -51,5 +60,16 @@ public class TransferController {
     public ResponseEntity<TransferResponse> getTransfer(@PathVariable Long id) {
         Transfer transfer = transferService.getById(id);
         return ResponseEntity.ok(TransferMapper.toResponse(transfer));
+    }
+    @Operation(summary = "Get transfer history for an account")
+    @GetMapping("/account/{accountId}")
+    public Page<TransferResponse> getAccountTransfers(
+            @PathVariable Long accountId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) BigDecimal minAmount
+    ) {
+        return transferService.getHistory(accountId,  status, minAmount, pageable)
+                .map(TransferMapper::toResponse);
     }
 }
