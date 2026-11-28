@@ -6,6 +6,7 @@ import com.example.spring.core.account.Account;
 import com.example.spring.core.account.AccountRepository;
 import com.example.spring.core.audit.AuditService;
 import com.example.spring.core.config.TransferProperties;
+import com.example.spring.core.events.TransferCompletedEvent;
 import com.example.spring.core.transfer.Status;
 import com.example.spring.core.transfer.Transfer;
 import com.example.spring.core.transfer.TransferRepository;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -37,11 +39,11 @@ class TransferServiceTest {
 
     private TransferProperties properties;
     private TransferService transferService;
-
+    @Mock private ApplicationEventPublisher eventPublisher;
     @BeforeEach
     void setUp() {
         properties = new TransferProperties(new BigDecimal("10000.00"), true);
-        transferService = new TransferService(accounts, transfers, auditService, properties);
+        transferService = new TransferService(accounts, transfers, auditService, properties, eventPublisher);
     }
 
     @Test
@@ -65,7 +67,7 @@ class TransferServiceTest {
     @Test
     void shouldThrowWhenTransfersDisabled() {
         TransferProperties disabledProps = new TransferProperties(new BigDecimal("10000.00"), false);
-        TransferService service = new TransferService(accounts, transfers, auditService, disabledProps);
+        TransferService service = new TransferService(accounts, transfers, auditService, disabledProps, eventPublisher);
 
         assertThrows(IllegalStateException.class,
                 () -> service.transfer(1L, 2L, new BigDecimal("50.00")));

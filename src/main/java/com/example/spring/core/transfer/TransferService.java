@@ -6,17 +6,18 @@ import com.example.spring.core.audit.AuditService;
 
 
 import com.example.spring.core.config.TransferProperties;
+import com.example.spring.core.events.TransferCompletedEvent;
 import com.example.spring.core.web.exception.BusinessRuleConflictException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.time.Instant;
 
 @Service
 public class TransferService {
@@ -24,22 +25,25 @@ public class TransferService {
     private final AccountRepository accounts;
     private final TransferRepository transfers;
     private final AuditService audit;
-
+    private final ApplicationEventPublisher eventPublisher;
     public TransferService(
             AccountRepository accounts,
             TransferRepository transfers,
             AuditService audit,
-            TransferProperties properties
+            TransferProperties properties,
+            ApplicationEventPublisher eventPublisher
 
     ) {
         this.properties = properties;
         this.accounts = accounts;
         this.transfers = transfers;
         this.audit = audit;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public Transfer transfer(long fromId, long toId, BigDecimal amount) {
+
         if (!properties.enabled()) {
             throw BusinessRuleConflictException.transfersDisabled();
         }
@@ -80,7 +84,13 @@ public class TransferService {
         Transfer saved = transfers.save(
                 new Transfer(fromId, toId, amount, Status.SUCCESSFUL)
         );
-
+        eventPublisher.publishEvent(new TransferCompletedEvent(
+                saved.getId(),
+                fromId,
+                toId,
+                amount,
+                Instant.now()
+        ));
         audit.log("transfer completed: id=" + saved.getId());
         return saved;
     }
